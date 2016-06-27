@@ -47,19 +47,56 @@ def getfileAsListOfLists(file,separator):
 def column(table,i):
     return [row[i] for row in table]
 
+# def diff(first, second):
+#     second = set(second)
+#     return [item for item in first if item not in second]
+
+
 passwd_entrys = getfileAsListOfLists(nismap_item_path,":")
 user_id_list_raw = column(passwd_entrys,2)
-user_id_set = set(user_id_list_raw)
+
+seen_set = set()
+duplicate_ids_set = set(x for x in user_id_list_raw if x in seen_set or seen_set.add(x))
+# unique_ids_set = user_id_list_raw - list(seen_set)
+
+print "duplicate_ids_set:"
+for id in duplicate_ids_set:
+    print id
+
+# print "unique_ids_set:"
+# for id in unique_ids_set:
+#     print id
+#
+# print user_id_list_raw
+
+# print "-------------------------------------------------------"
+# if len(user_id_list_raw) != len(user_id_set):
+#     print("User IDs are not uniq !!")
+#     print("number 0f read IDs = {}".format(len(user_id_list_raw)))
+#     print("number 0f uniq IDs = {}".format(len(user_id_set)))
+#     double_ids = diff(user_id_list_raw,user_id_set)
+#     print("double_ids = {}".format(double_ids))
+# else:
+#     print("User IDs are OK")
 
 
-print user_id_list_raw
+# NEUE ideen
 
-print "-------------------------------------------------------"
-if len(user_id_list_raw) != len(user_id_set):
-    print("User IDs are not uniq !!")
-    print("number 0f read IDs = {}".format(len(user_id_list_raw)))
-    print("number 0f uniq IDs = {}".format(len(user_id_set)))
-    for id in user_id_list_raw:
-        print("{}".format(id))
-else:
-    print("User IDs are OK")
+## Very simple and quick way of finding dupes with one iteration in Python is:
+#
+# testList = ['red', 'blue', 'red', 'green', 'blue', 'blue']
+#
+# testListDict = {}
+#
+# for item in testList:
+#   try:
+#     testListDict[item] += 1
+#   except:
+#     testListDict[item] = 1
+#
+# print testListDict
+#
+# Output will be as follows:
+#
+# >>> print testListDict
+# {'blue': 3, 'green': 1, 'red': 2}
