@@ -15,6 +15,11 @@ from prettyprint import pp
 #from sys import argv,exit
 
 
+#bondi011:ntnoV/yui2Cs:2031:105:Dirk Bonekaemper,1.0xy,06103/707-5728:/export/home/bondi011:/bin/bash
+#tuean030:M.EkllMjkljeXJc:2032:105:Andreas Tuerk,1.014,06103/707-57xx:/export/home/tuean030:/bin/bash
+#krape030:10UNl890njkXKss:2033:105:Peter Krauspe,1.0xx,06103/707-5739:/export/home/krape030:/bin/bash
+
+
 pydir =  os.path.dirname(os.path.abspath(__file__))
 basedir = os.path.dirname(pydir)
 bindir  = os.path.join(basedir,"bin")
@@ -47,13 +52,54 @@ def getfileAsListOfLists(file,separator):
 def column(table,i):
     return [row[i] for row in table]
 
-# def diff(first, second):
-#     second = set(second)
-#     return [item for item in first if item not in second]
+
+class Users(object):
+    """User Database"""
+
+    def __init__(self):
+        """Constructor"""
+        self.passwd_entrys_lol = getfileAsListOfLists(nismap_item_path,":")
+        self.Name = ""
+        self.Pwd  = ""
+        self.UID  = 0
+        self.GUI  = 0
+        self.FullName = ""
+        self.Location = "1.000"
+        self.Phone = ""
+        self.Comment = ""
+        self.HomeDir = ""
+        self.Shell = os.path.join("bin","bash")
 
 
-passwd_entrys = getfileAsListOfLists(nismap_item_path,":")
-user_id_list_raw = column(passwd_entrys,2)
+    def add(self, User):
+        """Add User"""
+
+        return id
+
+    def query(self, User):
+        """Query User"""
+        pass
+
+
+    def delete(self, User):
+        """Delete User"""
+        pass
+
+    def getUserList(self):
+        """List Users"""
+        pass
+
+    def getIdList(self):
+        return column(self.passwd_entrys_lol,2)
+
+class User(self):
+    def __init__(self,id):
+        """Constructor"""
+        pass
+
+
+
+
 
 seen_set = set()
 duplicate_ids_set = set(x for x in user_id_list_raw if x in seen_set or seen_set.add(x))
@@ -69,22 +115,13 @@ for id in duplicate_ids_set:
 #
 # print user_id_list_raw
 
-# print "-------------------------------------------------------"
-# if len(user_id_list_raw) != len(user_id_set):
-#     print("User IDs are not uniq !!")
-#     print("number 0f read IDs = {}".format(len(user_id_list_raw)))
-#     print("number 0f uniq IDs = {}".format(len(user_id_set)))
-#     double_ids = diff(user_id_list_raw,user_id_set)
-#     print("double_ids = {}".format(double_ids))
-# else:
-#     print("User IDs are OK")
 
 
 # NEUE ideen
 
 ## Very simple and quick way of finding dupes with one iteration in Python is:
 #
-# testList = ['red', 'blue', 'red', 'green', 'blue', 'blue']
+ # testList = ['red', 'blue', 'red', 'green', 'blue', 'blue']
 #
 # testListDict = {}
 #
