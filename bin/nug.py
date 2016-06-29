@@ -6,7 +6,7 @@
 #
 import os
 #import socket
-#import collections
+from collections import defaultdict
 #import argparse
 import json
 #import hjson
@@ -25,13 +25,8 @@ basedir = os.path.dirname(pydir)
 bindir  = os.path.join(basedir,"bin")
 vardir  = os.path.join(basedir,"var")
 nismap_basedir = os.path.join(os.path.sep,"srv","inst","cfg","nis")
-
 nis_domain = "se"
 nismap_dir = os.path.join(nismap_basedir,nis_domain)
-nismap_item = "passwd"
-nismap_item_path = os.path.join(nismap_dir,nismap_item)
-
-print ("nismap_item_path ={}".format(nismap_item_path))
 
 
 def getfileAsListOfLists(file,separator):
@@ -42,37 +37,74 @@ def getfileAsListOfLists(file,separator):
 
         if len(Lines) < 0:
             print "WARNING: %s is empty or has no valid lines !!" % file
-
-        ListOfLists  = [line.split(separator) for line in Lines if not line.startswith('#')]
-        return ListOfLists
+            return []
+        else:
+            ListOfLists  = [line.split(separator) for line in Lines if not line.startswith('#')]
+            return ListOfLists
     else:
         print "WARNING: %s doesn't exist !!" % file
         return []
+
+# def getPasswd(type):
+#     if type == "local":
+#         file_path = os.path.join(nismap_dir,"passwd")
+#         return getfileAsListOfLists(file_path,":")
+#     else:
+#         print("currently only type 'local' is supported!")
+#         return []
 
 def column(table,i):
     return [row[i] for row in table]
 
 
-class Users(object):
+class PasswdImporter(object):
+
+    def __init (self, model):
+        self.userManagementModel = model
+
+    def importFromPasswdFile(self, filename, type):
+        pwdlines = defaultdict(lambda:'')
+        if type == "local":
+            file_path = os.path.join(nismap_dir,"passwd")
+            pwdlines = getfileAsListOfLists(file_path,":")
+        else:
+            print("currently only type 'local' is supported!")
+            return False
+        if len(pwdlines) == 0:
+            return False
+        # iterate over pwd lines
+
+        for name, pwd, gid, uid, pwdcomment, homedir, shell in pwdlines:
+            fullname,location,phone = pwdcomment.split(',')
+            user = User(name=name, pwd=pwd, gid=gid, uid=uid, fullname=fullname, location=location, phone=phone, homedir=homedir, shell=shell, ugroup="", extcomment="", UIDisUniq=True)
+            self.userManagementModel.addUser(user)
+
+class Validator(object):
+    def __init (self, model):
+        self.userManagementModel = model
+
+    def getDuplicateUIDs(self):
+        seen_set = set()
+        return set(x for x in self.userManagementModel.getUIDs() if x in seen_set or seen_set.add(x))
+
+    def checkUID(self):
+        duplicates = self.getDuplicateUIDs()
+        for uid in duplicates:
+            usersWithDuplicateUid = self.userManagementModel.getAllUsersWithUid(uid)
+            for usr in usersWithDuplicateUid:
+                usr.UIDisUniq = False
+        return len(duplicates) == 0
+
+class UserManagement(object):
     """User Database"""
 
     def __init__(self):
         """Constructor"""
-        self.passwd_entrys_lol = getfileAsListOfLists(nismap_item_path,":")
-        self.Name = ""
-        self.Pwd  = ""
-        self.UID  = 0
-        self.GUI  = 0
-        self.FullName = ""
-        self.Location = "1.000"
-        self.Phone = ""
-        self.Comment = ""
-        self.HomeDir = ""
-        self.Shell = os.path.join("bin","bash")
+        self.userlist = []
 
-
-    def add(self, User):
+    def addUser(self, user):
         """Add User"""
+        self.userlist.append(user)
 
         return id
 
@@ -81,33 +113,82 @@ class Users(object):
         pass
 
 
-    def delete(self, User):
+    def deleteUser(self, user):
         """Delete User"""
-        pass
+        self.userlist.remove(user)
 
-    def getUserList(self):
+    def getAllUsersWithUid(self, uid):
         """List Users"""
-        pass
+        userList = []
+        for usr in self.userlist:
+            if(usr.uid == uid):
+                userList.append(usr)
+        return userList
 
-    def getIdList(self):
-        return column(self.passwd_entrys_lol,2)
+    def getUIDs(self):
+        uidList = []
+        for usr in self.userlist:
+            uidList.append(usr.uid)
+        return uidList
 
-class User(self):
-    def __init__(self,id):
+
+
+class User(object):
+    idCounter = 0
+    def __init__(self, name="", pwd="", gid=-1, uid=-1, fullname="", location="", phone="", homedir="", shell="", ugroup="", extcomment="", UIDisUniq=True):
         """Constructor"""
-        pass
+        self.ID = User.idCounter
+        User.idCounter += 1
+        self.name = name
+        self.pwd  = pwd
+        self.gid  = gid
+        self.uid  = uid
+        self.fullname = fullname
+        self.location = location
+        self.phone = phone
+        self.homedir = homedir
+        self.shell = shell
+        self.group = ugroup
+        self.extcomment = extcomment
+        self.UIDisUniq = UIDisUniq
+
+    def isValid(self):
+        return self.uid >= 0 and self.gid >= 0 and self.name != ""  ##TODO: complete...
+
+    def getPwdLine(self):
+        PwdLineItems = [
+            self.name,
+            self.pwd ,
+            self.gid ,
+            self.uid ,
+            ",".join(self.fullname , self.location , self.phone),
+            self.homedir,
+            self.shell,
+        ]
+        return PwdLineItems.join(":")
 
 
 
+# main
+
+# instanciate model
+
+userManagemnetModel = UserManagement()
+importer = PasswdImporter(userManagemnetModel)
+
+rc = importer.importFromPasswdFile("passwd", "local")
+
+if(rc):
+    print userManagemnetModel
+else:
+    print "something wrong with passwd import"
 
 
-seen_set = set()
-duplicate_ids_set = set(x for x in user_id_list_raw if x in seen_set or seen_set.add(x))
 # unique_ids_set = user_id_list_raw - list(seen_set)
 
-print "duplicate_ids_set:"
-for id in duplicate_ids_set:
-    print id
+#print "duplicate_ids_set:"
+#for id in duplicate_ids_set:
+#    print id
 
 # print "unique_ids_set:"
 # for id in unique_ids_set:
