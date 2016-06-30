@@ -1,4 +1,4 @@
-#!","usr","bin","env python
+#!usr/bin/env python
 #
 # Manage NIS Users
 #
@@ -30,28 +30,21 @@ nismap_dir = os.path.join(nismap_basedir,nis_domain)
 
 
 def getfileAsListOfLists(file,separator):
-    ListOfLists = []
+    listOfLists = []
     if os.path.exists(file):
         with open(file) as f:
             Lines = f.read().splitlines()
 
         if len(Lines) < 0:
-            print "WARNING: %s is empty or has no valid lines !!" % file
+            print ("WARNING: {%s} is empty or has no valid lines !!" , file)
             return []
         else:
-            ListOfLists  = [line.split(separator) for line in Lines if not line.startswith('#')]
-            return ListOfLists
+            listOfLists  = [line.split(separator) for line in Lines if not line.startswith('#')]
+            return listOfLists
     else:
-        print "WARNING: %s doesn't exist !!" % file
+        print ("WARNING: {%s} doesn't exist !!" , file)
         return []
 
-# def getPasswd(type):
-#     if type == "local":
-#         file_path = os.path.join(nismap_dir,"passwd")
-#         return getfileAsListOfLists(file_path,":")
-#     else:
-#         print("currently only type 'local' is supported!")
-#         return []
 
 def column(table,i):
     return [row[i] for row in table]
@@ -59,11 +52,12 @@ def column(table,i):
 
 class PasswdImporter(object):
 
+    #pwdlines = defaultdict(lambda:'')
+
     def __init (self, model):
         self.userManagementModel = model
 
     def importFromPasswdFile(self, filename, type):
-        pwdlines = defaultdict(lambda:'')
         if type == "local":
             file_path = os.path.join(nismap_dir,"passwd")
             pwdlines = getfileAsListOfLists(file_path,":")
@@ -72,8 +66,8 @@ class PasswdImporter(object):
             return False
         if len(pwdlines) == 0:
             return False
-        # iterate over pwd lines
 
+        # iterate over pwd lines
         for name, pwd, gid, uid, pwdcomment, homedir, shell in pwdlines:
             fullname,location,phone = pwdcomment.split(',')
             user = User(name=name, pwd=pwd, gid=gid, uid=uid, fullname=fullname, location=location, phone=phone, homedir=homedir, shell=shell, ugroup="", extcomment="", UIDisUniq=True)
@@ -198,23 +192,3 @@ else:
 
 
 
-# NEUE ideen
-
-## Very simple and quick way of finding dupes with one iteration in Python is:
-#
- # testList = ['red', 'blue', 'red', 'green', 'blue', 'blue']
-#
-# testListDict = {}
-#
-# for item in testList:
-#   try:
-#     testListDict[item] += 1
-#   except:
-#     testListDict[item] = 1
-#
-# print testListDict
-#
-# Output will be as follows:
-#
-# >>> print testListDict
-# {'blue': 3, 'green': 1, 'red': 2}
