@@ -59,28 +59,42 @@ class UserManagerGUI(Frame):
         if(passwdFileImported):
 
             # print userManagemnetModel
-            r = 1
             # simple gui to test model
-            for user in userManagemnetModel.userlist:
-                c = 0
-                for item in (user.name, user.uid, user.gid, user.fullname, user.location, user.phone, user.homedir, user.shell, user.ugroup, user.extcomment, user.UIDisUniq):
-                    Label(self.frame, text=item).grid(row=r, column=c, sticky="w")
-                    c += 1
-                r += 1
-                print user.getPwdLine()
 
-            print "\n-------------------------------------------------\n"
-
-            for user in userManagemnetModel.userlist:
-                print user.getUserInfoLine()
-
-            print "\n-------------------------------------------------\n"
+            # headline
+            r = 1
+            c = 0
+            for item in ("name", "uid", "gid", "fullname", "location", "phone", "homedir", "shell","ugroup","extcomment", "UIDisUniq"):
+                item = item.upper()
+                Label(self.frame, text=item,bg="lightblue", anchor=W, relief=SUNKEN).grid(row=r, column=c, sticky=W)
+                c += 1
+            r += 1
 
             if not validator.checkUidsUniq():
                 print "\nFollowing Users have NO UNIQ IDs:\n"
                 for user in userManagemnetModel.userlist:
                     if not user.UIDisUniq:
                         print user.getUserInfoLine()
+
+            for user in userManagemnetModel.userlist:
+                c = 0
+                for item in (user.name, user.uid, user.gid, user.fullname, user.location, user.phone, user.homedir, user.shell, user.ugroup, user.extcomment, user.UIDisUniq):
+                    if user.UIDisUniq == 1:
+                        bg = "white"
+                    else:
+                        bg = "red"
+                    Label(self.frame, text=item, relief=GROOVE, bg=bg).grid(row=r, column=c, sticky="w")
+                    c += 1
+                r += 1
+                print user.getPwdLine()
+
+            print "\n-------------------------------------------------\n"
+
+            # for user in userManagemnetModel.userlist:
+            #     print user.getUserInfoLine()
+
+            print "\n-------------------------------------------------\n"
+
 
         else:
             print "something wrong with passwd import"
